@@ -1,0 +1,66 @@
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBPtP0xoj419TBukYgGPRR1NeLuInX-usw",
+  authDomain: "fiado-loja.firebaseapp.com",
+  projectId: "fiado-loja",
+  storageBucket: "fiado-loja.firebasestorage.app",
+  messagingSenderId: "536637530804",
+  appId: "1:536637530804:web:ebd9c51d2703f059a0ade1",
+  measurementId: "G-CH1Y197L5C"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const col = collection(db, "fiados");
+
+async function salvar() {
+  let nome = document.getElementById("nome").value.trim();
+  let produto = document.getElementById("produto").value.trim();
+
+  if (!nome || !produto) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  await addDoc(col, { nome, produto });
+
+  document.getElementById("nome").value = "";
+  document.getElementById("produto").value = "";
+
+  carregar();
+}
+
+async function carregar() {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  const snapshot = await getDocs(col);
+  snapshot.forEach(d => {
+    const item = d.data();
+    lista.innerHTML += `
+      <li>
+        <div>
+          <div class="cliente">${item.nome}</div>
+          <div class="produto">${item.produto}</div>
+        </div>
+        <button class="excluir" onclick="excluir('${d.id}')">Excluir</button>
+      </li>
+    `;
+  });
+}
+
+async function excluir(id) {
+  if (!confirm("Deseja excluir este registro?")) return;
+
+  await deleteDoc(doc(db, "fiados", id));
+  carregar();
+}
+
+window.salvar = salvar;
+window.excluir = excluir;
+
+carregar();
+</script>
